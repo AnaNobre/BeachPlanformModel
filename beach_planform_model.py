@@ -32,7 +32,8 @@ def wave_builder(wave_inp, param = ''):
     for param in param_lst: 
         dir_param.append(['Dir' + param])
         h_param.append(['Hs' + param])
-        t_param.append(['Tm' + param])
+        t_param.append(['Tm' + param]) # Tm 
+        # t_param.append(['Tp' + param]) # for sensitive analisys with Tp - valid only to the total sea state
     wDir = []
     wT  = []
     wHs = []
@@ -181,7 +182,7 @@ INPUT OPTIONS
 
 optimize_fixed_points = True
 
-option_index = 3  # index of the option file listed in the option_list
+option_index = 0 # index of the option file listed in the option_list
 
 # the options pkl file are created with create_input_dict script
 # file includes location of wave and coastline files and options
@@ -193,7 +194,7 @@ option_list = ('optionsPT.pkl', 'optionsNarrabeen.pkl',
            'optionsPuertoHuarmey.pkl', 'optionsAgraria.pkl',
            'optionsParaiso.pkl', 
            'optionsSensivityMatrix.pkl','optionsSensivityMatrixReta.pkl',
-           'optionsPT_conc.pkl','optionsCono1.pkl', 'optionsVictoriaBay.pkl',)
+            'optionsPT_conc.pkl','optionsCono1.pkl', 'optionsVictoriaBay.pkl',)
 option_list_dir = 'support/'
 
 short_name = str(option_list[option_index][7:-4])
@@ -205,10 +206,24 @@ fixed_points =  gpd.read_file(options['fixed_points_file'])
 linha_costa = SEMGrid.SEMLine(filename = options['coastline_file'], 
               x_plot = True, xc_plot = False, shp_plot = True, 
               reverse = options['reverse'], x_annotation = False, shp_marker = None)
+
 waves = wts.WaveTimeSeries(filename = options['wave_file'],
               datafile_type = 'era5', lat = options['lat'], long = options['long'], label_style = 'default')
 
- 
+
+
+# # Sensitive analysis to shorter wavetimeseries 
+# # simulate with  waves between 2015 and 2022 
+# from datetime import datetime
+# waves_temp = wts.WaveTimeSeries(filename = options['wave_file'],
+#               datafile_type = 'era5', lat = options['lat'], long = options['long'], label_style = 'default')
+# # datestart =  datetime(1979, 1, 1, 0, 0, 0)
+# datestart =  datetime(2015, 1, 1, 0, 0, 0)
+# dateend =  datetime(2021, 12, 31, 21, 0, 0)
+# waves = waves_temp.cut(datestart, dateend)
+
+
+
 
 replace_sea = False
 if replace_sea:
@@ -274,7 +289,11 @@ print ('\n Processing coastline :      '+ short_name +
 seg_lines =[]
 crs = linha_costa.crs
 
+
 savingDir='data/BPM_results/' 
+# savingDir='data/BPM_results_SensYrs/' 
+# savingDir='data/BPM_results_SensTP/' 
+
 
 if optimize_fixed_points:
     # New coastline
@@ -304,3 +323,4 @@ newCl.to_file(driver = 'ESRI Shapefile', filename = lineFilename )
 #%% 
 waves.plot_windrose()
 desc = waves.describe()
+
